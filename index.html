@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CipherBox — 密碼與編碼解碼工具箱</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="mobile-menu-btn" class="icon-btn mobile-only" aria-label="開啟工具選單" title="開啟選單">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">🔐</div>
+          <div>
+            <h1 class="brand-title">CipherBox</h1>
+            <p class="brand-subtitle">純前端編碼與加解密工具箱</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            id="tool-search"
+            type="search"
+            placeholder="搜尋工具（例如：摩斯、凱撒、Base64、JWT...）"
+            autocomplete="off"
+          />
+          <kbd class="kbd-hint">/</kbd>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button id="theme-toggle" class="btn btn-ghost" title="切換深淺色主題">
+          <span id="theme-icon">☀️</span>
+          <span class="hide-sm">切換主題</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="workspace-wrapper">
+      <!-- Sidebar Backdrop for Mobile -->
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+      <!-- Sidebar Navigation -->
+      <aside id="sidebar" class="sidebar" aria-label="工具列表">
+        <nav id="tool-nav" class="tool-nav"></nav>
+        <div class="sidebar-footer">
+          <p>所有運算皆於瀏覽器本地端執行，資料不會上傳至任何伺服器。</p>
+        </div>
+      </aside>
+
+      <!-- Main Tool Area -->
+      <main class="main-content">
+        <section class="tool-header">
+          <div class="tool-header-info">
+            <div class="tool-title-row">
+              <span id="tool-badge" class="badge">古典密碼</span>
+              <h2 id="tool-title">摩斯密碼 (Morse Code)</h2>
+            </div>
+            <p id="tool-desc" class="tool-desc"></p>
+          </div>
+          <div class="tool-header-actions">
+            <button id="btn-sample" class="btn btn-secondary" title="載入測試範例">
+              載入範例
+            </button>
+            <button id="btn-clear" class="btn btn-ghost" title="清空輸入與輸出">
+              清空
+            </button>
+          </div>
+        </section>
+
+        <!-- Direction & Quick Actions Bar -->
+        <section class="control-bar">
+          <div id="mode-switch" class="segmented-control" role="tablist">
+            <button id="mode-encode" class="seg-btn active" data-mode="encode" role="tab" aria-selected="true">
+              編碼 / 加密
+            </button>
+            <button id="mode-decode" class="seg-btn" data-mode="decode" role="tab" aria-selected="false">
+              解碼 / 解密
+            </button>
+          </div>
+
+          <div class="control-bar-right">
+            <button id="btn-swap" class="btn btn-secondary" title="將輸出結果交換到輸入框並反轉模式">
+              ⇄ 交換輸入輸出
+            </button>
+          </div>
+        </section>
+
+        <!-- Tool-Specific Dynamic Options -->
+        <section id="tool-options" class="tool-options hidden"></section>
+
+        <!-- Smart Auto-Detect Banner -->
+        <div id="detect-banner" class="detect-banner hidden">
+          <span id="detect-message"></span>
+          <button id="detect-apply-btn" class="btn btn-sm btn-primary">切換並解碼</button>
+        </div>
+
+        <!-- Error / Info Banner -->
+        <div id="status-banner" class="status-banner hidden" role="alert"></div>
+
+        <!-- Dual Editor Grid -->
+        <section class="editor-grid">
+          <div class="editor-card">
+            <div class="editor-card-header">
+              <div class="editor-label-group">
+                <span id="input-label" class="editor-label">輸入明文</span>
+                <span id="input-stats" class="stats-pill">0 字元 · 0 bytes</span>
+              </div>
+              <div class="editor-actions">
+                <button id="btn-paste" class="btn btn-xs btn-ghost" title="從剪貼簿貼上">貼上</button>
+              </div>
+            </div>
+            <textarea
+              id="input-text"
+              class="code-textarea"
+              placeholder="請在此輸入或貼上內容..."
+              spellcheck="false"
+            ></textarea>
+          </div>
+
+          <div class="editor-card">
+            <div class="editor-card-header">
+              <div class="editor-label-group">
+                <span id="output-label" class="editor-label">輸出結果</span>
+                <span id="output-stats" class="stats-pill">0 字元 · 0 bytes</span>
+              </div>
+              <div class="editor-actions">
+                <button id="btn-download" class="btn btn-xs btn-ghost" title="下載結果為文字檔">下載 .txt</button>
+                <button id="btn-copy" class="btn btn-xs btn-primary" title="複製輸出結果">複製結果</button>
+              </div>
+            </div>
+            <textarea
+              id="output-text"
+              class="code-textarea"
+              placeholder="轉換結果會即時顯示於此..."
+              readonly
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- Extra Dynamic Panel (e.g. Brute-Force Table, JWT Inspector, Auto-Detect Candidates, Morse Chart) -->
+        <section id="extra-panel" class="extra-panel hidden"></section>
+
+        <!-- Algorithm Guide & Reference -->
+        <details id="guide-details" class="guide-details">
+          <summary>演算法說明與使用提示</summary>
+          <div id="guide-content" class="guide-content"></div>
+        </details>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="ciphers.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
